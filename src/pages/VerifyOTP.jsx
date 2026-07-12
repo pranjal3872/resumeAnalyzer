@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, Link } from "react-router-dom";
 import API from "../api/api";
 import toast from "react-hot-toast";
+import { FaEnvelopeOpenText, FaFileAlt } from "react-icons/fa";
 
 const VerifyOTP = () => {
   const navigate = useNavigate();
@@ -10,8 +11,18 @@ const VerifyOTP = () => {
   const email = location.state?.email || "";
 
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
-  const [timer, setTimer] = useState(30);
-  const [canResend, setCanResend] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [seconds, setSeconds] = useState(60);
+
+  useEffect(() => {
+    if (seconds <= 0) return;
+
+    const timer = setInterval(() => {
+      setSeconds((prev) => prev - 1);
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [seconds]);
 
   const handleOTPChange = (e, index) => {
     const value = e.target.value;
@@ -22,128 +33,175 @@ const VerifyOTP = () => {
     newOTP[index] = value;
     setOtp(newOTP);
 
-    // Move forward
     if (value && index < 5) {
-        document.getElementById(`otp-${index + 1}`)?.focus();
+      document.getElementById(`otp-${index + 1}`)?.focus();
     }
+  };
 
-    // Move backward
-    if (!value && index > 0) {
-        document.getElementById(`otp-${index - 1}`)?.focus();
+  const handleKeyDown = (e, index) => {
+    if (
+      e.key === "Backspace" &&
+      otp[index] === "" &&
+      index > 0
+    ) {
+      document.getElementById(`otp-${index - 1}`)?.focus();
     }
-    };
+  };
 
-  useEffect(() => {
-    if (timer > 0) {
-      const interval = setInterval(() => {
-        setTimer((prev) => prev - 1);
-      }, 1000);
+  const handlePaste = (e) => {
+    const pasted = e.clipboardData.getData("text").trim();
 
-      return () => clearInterval(interval);
-    } else {
-      setCanResend(true);
-    }
-  }, [timer]);
+    if (!/^\d{6}$/.test(pasted)) return;
 
-  const handleResendOTP = async () => {
-    try {
-      await API.post("/auth/resend-otp", {
-        email,
-      });
+    const arr = pasted.split("");
 
-      toast.success("New OTP sent successfully!");
-
-      setTimer(30);
-      setCanResend(false);
-
-    } catch (err) {
-      toast.error(err.response?.data?.message || "Failed to resend OTP");
-    }
+    setOtp(arr);
   };
 
   const handleVerify = async (e) => {
     e.preventDefault();
 
-    try {
-        const res = await API.post("/auth/verify-otp", {
-        email,
-        otp: otp.join(""),
-        });
+    setLoading(true);
 
-      // Save JWT
+    try {
+      const code = otp.join("");
+
+      const res = await API.post("/auth/verify-otp", {
+        email,
+        otp: code,
+      });
+
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("name", res.data.user.name);
 
-      toast.success("Email Verified Successfully!");
+      toast.success("Email Verified!");
 
       navigate("/");
+
     } catch (err) {
-      toast.error(err.response?.data?.message || "Invalid OTP");
+      toast.error(
+        err.response?.data?.message || "Invalid OTP"
+      );
+    } finally {
+      setLoading(false);
     }
   };
 
-  return (
-    <div className="min-h-screen flex justify-center items-center bg-slate-100">
-      <div className="bg-white shadow-lg rounded-xl p-8 w-full max-w-md">
+  const resendOTP = () => {
+    toast.success("Resend OTP will be implemented next.");
+    setSeconds(60);
+  };
 
-        <h2 className="text-3xl font-bold text-center mb-6">
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-100 via-white to-blue-200 flex justify-center items-center px-4">
+
+      <div className="bg-white rounded-3xl shadow-2xl p-8 w-full max-w-md">
+
+        <div className="flex flex-col items-center mb-8">
+
+          <div className="bg-blue-100 p-4 rounded-full mb-4">
+            <FaFileAlt className="text-blue-600 text-3xl" />
+          </div>
+
+          <h1 className="text-3xl font-bold">
+            Resume Analyzer
+          </h1>
+
+          <p className="text-gray-500 mt-2">
+            AI Powered Resume Screening
+          </p>
+
+        </div>
+
+        <div className="flex justify-center mb-4">
+
+          <FaEnvelopeOpenText className="text-6xl text-blue-600" />
+
+        </div>
+
+        <h2 className="text-2xl font-bold text-center">
           Verify Email
         </h2>
 
-        <p className="text-gray-600 text-center mb-6">
-          OTP sent to
+        <p className="text-center text-gray-500 mt-2 mb-6">
+
+          We've sent a verification code to
+
           <br />
+
           <strong>{email}</strong>
+
         </p>
 
         <form onSubmit={handleVerify}>
 
-          <div className="flex justify-center gap-3 mb-6">
-            {Array.from({ length: 6 }).map((_, index) => (
-             <input
-                id={`otp-${index}`}
+          <div
+            className="flex justify-center gap-3 mb-8"
+            onPaste={handlePaste}
+          >
+
+            {otp.map((digit, index) => (
+              <input
                 key={index}
-                type="text"
+                id={`otp-${index}`}
+                value={digit}
                 maxLength={1}
-                value={otp[index] || ""}
-                onChange={(e) => handleOTPChange(e, index)}
-                className="w-12 h-12 border-2 rounded-lg text-center text-2xl font-bold focus:outline-none focus:border-blue-500"
-                />
+                type="text"
+                onChange={(e) =>
+                  handleOTPChange(e, index)
+                }
+                onKeyDown={(e) =>
+                  handleKeyDown(e, index)
+                }
+                className="w-12 h-14 border-2 rounded-xl text-center text-2xl font-bold focus:border-blue-500 focus:outline-none"
+              />
             ))}
-            </div>
+
+          </div>
 
           <button
-                type="submit"
-                disabled={otp.join("").length !== 6}
-                className={`w-full py-3 rounded-lg text-white font-semibold transition ${
-                    otp.join("").length === 6
-                    ? "bg-blue-600 hover:bg-blue-700"
-                    : "bg-gray-400 cursor-not-allowed"
-                }`}
-                >
-                Verify OTP
-            </button>
+            disabled={loading}
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-semibold transition"
+          >
+            {loading ? "Verifying..." : "Verify OTP"}
+          </button>
 
         </form>
-        
 
-        <div className="mt-5 text-center">
-          {canResend ? (
+        <div className="text-center mt-6">
+
+          {seconds > 0 ? (
+            <p className="text-gray-500">
+              Resend OTP in
+              <span className="font-bold text-blue-600">
+                {" "}
+                {seconds}s
+              </span>
+            </p>
+          ) : (
             <button
-              type="button"
-              onClick={handleResendOTP}
+              onClick={resendOTP}
               className="text-blue-600 font-semibold hover:underline"
             >
               Resend OTP
             </button>
-          ) : (
-            <p className="text-gray-500">
-              Resend OTP in <span className="font-bold">{timer}s</span>
-            </p>
           )}
+
+        </div>
+
+        <div className="text-center mt-6">
+
+          <Link
+            to="/signup"
+            className="text-gray-500 hover:text-blue-600"
+          >
+            ← Back to Signup
+          </Link>
+
         </div>
 
       </div>
+
     </div>
   );
 };
