@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { registerUser } from "../api/auth";
 import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 
 const Signup = () => {
   const [name, setName] = useState("");
@@ -19,7 +20,7 @@ const Signup = () => {
         password,
       });
 
-      alert(data.message);
+      toast.success(data.message);
 
       // Redirect to OTP Verification page
       navigate("/verify-otp", {
@@ -28,7 +29,9 @@ const Signup = () => {
         },
       });
     } catch (err) {
-      alert(err.response?.data?.message || "Registration failed");
+      toast.error(
+        err.response?.data?.message || "Registration failed"
+      );
     }
   };
 

@@ -2,6 +2,7 @@ import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../api/api";
 import { deleteResume } from "../api/resume";
+import toast from "react-hot-toast";
 
 import {
   FaFilePdf,
@@ -44,7 +45,7 @@ function History() {
       fetchResumes();
     } catch (error) {
       console.log(error);
-      alert("Failed to delete resume.");
+      toast.error("Failed to delete resume.");
     }
   };
 

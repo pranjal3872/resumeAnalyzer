@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaCloudUploadAlt, FaFilePdf, FaTimes, FaShieldAlt } from "react-icons/fa";
 import { uploadResume } from "../api/resume";
+import toast from "react-hot-toast";
 
 function Upload() {
   const [file, setFile] = useState(null);
@@ -20,7 +21,7 @@ function Upload() {
     if (!droppedFile) return;
 
     if (droppedFile.type !== "application/pdf") {
-      alert("Please upload a PDF file.");
+      toast.error("Please upload a PDF file.");
       return;
     }
 
@@ -40,7 +41,7 @@ function Upload() {
   // Upload Resume
   const handleUpload = async () => {
     if (!file) {
-      alert("Please select a PDF resume.");
+      toast("Please select a PDF resume.");
       return;
     }
 
@@ -51,7 +52,9 @@ function Upload() {
 
       navigate("/dashboard");
     } catch (error) {
-      alert(error.response?.data?.message || "Upload failed");
+      toast.error(
+        error.response?.data?.message || "Upload failed"
+      );
     } finally {
       setLoading(false);
     }
@@ -122,7 +125,7 @@ function Upload() {
                       selectedFile &&
                       selectedFile.type !== "application/pdf"
                     ) {
-                      alert("Please upload a PDF file.");
+                      toast.error("Please upload a PDF file.");
                       return;
                     }
 

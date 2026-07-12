@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import API from "../api/api";
+import toast from "react-hot-toast";
 
 const VerifyOTP = () => {
   const navigate = useNavigate();
@@ -50,13 +51,13 @@ const VerifyOTP = () => {
         email,
       });
 
-      alert("New OTP sent successfully!");
+      toast.success("New OTP sent successfully!");
 
       setTimer(30);
       setCanResend(false);
 
     } catch (err) {
-      alert(err.response?.data?.message || "Failed to resend OTP");
+      toast.error(err.response?.data?.message || "Failed to resend OTP");
     }
   };
 
@@ -73,11 +74,11 @@ const VerifyOTP = () => {
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("name", res.data.user.name);
 
-      alert("Email Verified Successfully!");
+      toast.success("Email Verified Successfully!");
 
       navigate("/");
     } catch (err) {
-      alert(err.response?.data?.message || "Invalid OTP");
+      toast.error(err.response?.data?.message || "Invalid OTP");
     }
   };
 
