@@ -1,21 +1,27 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { loginUser } from "../api/auth";
 
 const Login = () => {
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      const data = await loginUser({ email, password });
-      localStorage.setItem("token", data.token); // save JWT token
-      alert("Login successful");
-      window.location.href = "/dashboard"; // redirect to dashboard
-    } catch (err) {
-      alert(err.response?.data || "Login failed");
-    }
-  };
+  e.preventDefault();
+
+  try {
+    const data = await loginUser({ email, password });
+
+    localStorage.setItem("token", data.token);
+    localStorage.setItem("name", data.user.name);
+
+    navigate("/");
+
+  } catch (err) {
+    alert(err.response?.data || "Login failed");
+  }
+};
 
   return (
     <form onSubmit={handleSubmit}>
