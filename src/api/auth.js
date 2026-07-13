@@ -45,3 +45,31 @@ export const getProfile = async () => {
   const res = await API.get("/profile");
   return res.data;
 };
+export const updateProfile = async (data) => {
+  const res = await API.put("/profile", data);
+  return res.data;
+};
+
+export const uploadPhoto = async (file) => {
+
+    const formData = new FormData();
+
+    formData.append("photo", file);
+
+    const res = await API.put(
+        "/profile/photo",
+        formData,
+        {
+            headers:{
+                "Content-Type":"multipart/form-data"
+            }
+        }
+    );
+
+    return res.data;
+}
+
+export const removePhoto = async () => {
+  const res = await API.delete("/profile/photo");
+  return res.data;
+};
