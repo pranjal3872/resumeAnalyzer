@@ -1,6 +1,9 @@
 import "./App.css";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import VerifyOTP from "./pages/VerifyOTP";
+import ForgotPassword from "./pages/ForgotPassword";
+import VerifyResetOTP from "./pages/VerifyResetOTP";
+import ResetPassword from "./pages/ResetPassword";
 
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
@@ -12,6 +15,7 @@ import Upload from "./pages/Upload";
 import Dashboard from "./pages/Dashboard";
 import History from "./pages/History";
 import ResumeDetails from "./pages/ResumeDetails";
+import Profile from "./pages/Profile";
 
 function App() {
   return (
@@ -21,6 +25,7 @@ function App() {
 
         <div className="content">
           <Routes>
+            <Route path="/profile" element={<Profile />} />
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
@@ -29,7 +34,20 @@ function App() {
             <Route path="/history" element={<History />} />
             <Route path="/resume/:id" element={<ResumeDetails />} />
             <Route path="/verify-otp" element={<VerifyOTP />} />
-          </Routes>
+            <Route
+              path="/forgot-password"
+              element={<ForgotPassword />}
+            />
+            <Route
+              path="/verify-reset-otp"
+              element={<VerifyResetOTP />}
+            />
+            <Route
+              path="/reset-password"
+              element={<ResetPassword />}
+            />
+            </Routes>
+             
         </div>
 
         <Footer />

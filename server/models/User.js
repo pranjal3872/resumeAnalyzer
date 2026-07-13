@@ -23,13 +23,26 @@ const userSchema = new mongoose.Schema(
       default: false,
     },
 
+    // Email Verification OTP
     otp: {
       type: String,
+      default: "",
     },
 
     otpExpires: {
       type: Date,
     },
+
+    // Forgot Password OTP
+    resetOTP: {
+      type: String,
+      default: "",
+    },
+
+    resetOTPExpires: {
+      type: Date,
+    },
+   
   },
   {
     timestamps: true,

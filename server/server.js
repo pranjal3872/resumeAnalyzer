@@ -7,6 +7,7 @@ dotenv.config();
 const authRoutes = require("./routes/authRoutes");
 const connectDB = require("./config/db");
 const testEmailRoute = require("./routes/testEmailRoute");
+const profileRoutes = require("./routes/profileRoutes");
 
 connectDB();
 
@@ -27,6 +28,7 @@ app.use("/api/resumes", require("./routes/resumeRoutes"));
 app.use("/api/test-email", testEmailRoute);
 app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/api/auth", authRoutes);
+app.use("/api/profile", profileRoutes);
 
 // Start Server
 const PORT = process.env.PORT || 5000;

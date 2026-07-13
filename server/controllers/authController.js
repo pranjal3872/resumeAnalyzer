@@ -173,10 +173,74 @@ exports.verifyOTP = async (req, res) => {
   }
 };
 
-// ================= RESEND OTP =================
+// ================= FORGOT PASSWORD =================
 
-exports.resendOTP = async (req, res) => {
+exports.forgotPassword = async (req, res) => {
   const { email } = req.body;
+
+  try {
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({
+        message: "No account found with this email.",
+      });
+    }
+
+    // Generate 6-digit OTP
+    const otp = Math.floor(
+      100000 + Math.random() * 900000
+    ).toString();
+
+    user.resetOTP = otp;
+    user.resetOTPExpires = new Date(
+      Date.now() + 5 * 60 * 1000
+    );
+
+    await user.save();
+
+    await sendEmail(
+      email,
+      "Resume Analyzer - Password Reset OTP",
+      `
+      <div style="font-family:Arial;padding:20px;">
+        <h2>Password Reset</h2>
+
+        <p>Hello <b>${user.name}</b>,</p>
+
+        <p>Your OTP for resetting your password is:</p>
+
+        <h1 style="color:#2563eb;letter-spacing:5px;">
+          ${otp}
+        </h1>
+
+        <p>This OTP is valid for <b>5 minutes</b>.</p>
+
+        <p>If you didn't request this, simply ignore this email.</p>
+
+        <br>
+
+        <p>Resume Analyzer Team</p>
+      </div>
+      `
+    );
+
+    res.json({
+      message: "Password reset OTP sent successfully.",
+      email,
+    });
+
+  } catch (err) {
+    res.status(500).json({
+      message: err.message,
+    });
+  }
+};
+
+// ================= VERIFY RESET OTP =================
+
+exports.verifyResetOTP = async (req, res) => {
+  const { email, otp } = req.body;
 
   try {
     const user = await User.findOne({ email });
@@ -187,47 +251,134 @@ exports.resendOTP = async (req, res) => {
       });
     }
 
-    if (user.isVerified) {
+    if (user.resetOTP !== otp) {
       return res.status(400).json({
-        message: "User already verified",
+        message: "Invalid OTP",
       });
     }
 
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    if (user.resetOTPExpires < Date.now()) {
+      return res.status(400).json({
+        message: "OTP has expired",
+      });
+    }
 
-    user.otp = otp;
-    user.otpExpires = new Date(Date.now() + 5 * 60 * 1000);
+    return res.status(200).json({
+      message: "OTP verified successfully",
+    });
+
+  } catch (err) {
+    return res.status(500).json({
+      message: err.message,
+    });
+  }
+};
+
+// ================= RESET PASSWORD =================
+
+exports.resetPassword = async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found",
+      });
+    }
+
+    // Hash new password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    user.password = hashedPassword;
+
+    // Clear reset OTP
+    user.resetOTP = "";
+    user.resetOTPExpires = null;
+
+    await user.save();
+
+    return res.status(200).json({
+      message: "Password reset successfully",
+    });
+
+  } catch (err) {
+    return res.status(500).json({
+      message: err.message,
+    });
+  }
+};
+// ================= RESEND OTP =================
+
+exports.resendOTP = async (req, res) => {
+  const { email } = req.body;
+
+  console.log("Resend OTP request:", email);
+
+  try {
+    const user = await User.findOne({ email });
+
+    console.log("User:", user);
+
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found",
+      });
+    }
+
+    const otp = Math.floor(
+      100000 + Math.random() * 900000
+    ).toString();
+
+    if (!user.isVerified) {
+      console.log("Sending signup OTP");
+
+      user.otp = otp;
+      user.otpExpires = new Date(Date.now() + 5 * 60 * 1000);
+
+      await user.save();
+
+      await sendEmail(
+        email,
+        "Resume Analyzer - Email Verification",
+        `
+        <h2>Email Verification</h2>
+        <h1>${otp}</h1>
+        `
+      );
+
+      console.log("Signup OTP sent");
+
+      return res.json({
+        message: "Verification OTP sent successfully",
+      });
+    }
+
+    console.log("Sending reset OTP");
+
+    user.resetOTP = otp;
+    user.resetOTPExpires = new Date(Date.now() + 5 * 60 * 1000);
 
     await user.save();
 
     await sendEmail(
       email,
-      "Resume Analyzer - Email Verification",
-      `
-      <div style="font-family:Arial,sans-serif;padding:20px;">
-        <h2>Email Verification</h2>
-
-        <p>Hello <b>${user.name}</b>,</p>
-
-        <p>Your new verification OTP is:</p>
-
-        <h1 style="color:#2563eb;">${otp}</h1>
-
-        <p>This OTP is valid for <b>5 minutes</b>.</p>
-
-      </div>
-      `
+      "Resume Analyzer - Password Reset",
+      `<h1>${otp}</h1>`
     );
 
-    return res.status(200).json({
-      message: "New OTP sent successfully",
-      email,
+    console.log("Reset OTP sent");
+
+    return res.json({
+      message: "Reset OTP sent successfully",
     });
 
   } catch (err) {
+    console.log("RESEND ERROR:");
     console.log(err);
 
-    return res.status(500).json({
+    res.status(500).json({
       message: err.message,
     });
   }

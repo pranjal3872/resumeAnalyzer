@@ -49,13 +49,14 @@ function Navbar() {
               >
                 History
               </Link>
-
-              <button
-                onClick={logout}
-                className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium transition"
+             <Link
+                to="/profile"
+                className="text-white hover:text-blue-200"
               >
-                Logout
-              </button>
+                Profile
+              </Link>
+
+              
             </>
           ) : (
             <>

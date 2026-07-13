@@ -3,9 +3,10 @@ import { useLocation, useNavigate, Link } from "react-router-dom";
 import API from "../api/api";
 import { resendOTP } from "../api/auth";
 import toast from "react-hot-toast";
-import { FaEnvelopeOpenText, FaFileAlt } from "react-icons/fa";
+import { FaShieldAlt, FaLock } from "react-icons/fa";
 
-const VerifyOTP = () => {
+
+const VerifyResetOTP = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -54,9 +55,7 @@ const VerifyOTP = () => {
 
     if (!/^\d{6}$/.test(pasted)) return;
 
-    const arr = pasted.split("");
-
-    setOtp(arr);
+    setOtp(pasted.split(""));
   };
 
   const handleVerify = async (e) => {
@@ -67,17 +66,18 @@ const VerifyOTP = () => {
     try {
       const code = otp.join("");
 
-      const res = await API.post("/auth/verify-otp", {
+      await API.post("/auth/verify-reset-otp", {
         email,
         otp: code,
       });
 
-      localStorage.setItem("token", res.data.token);
-      localStorage.setItem("name", res.data.user.name);
-
-      toast.success("Email Verified!");
-
-      navigate("/");
+      toast.success("OTP Verified Successfully!");
+     
+      navigate("/reset-password", {
+        state: {
+          email,
+        },
+      });
 
     } catch (err) {
       toast.error(
@@ -88,7 +88,7 @@ const VerifyOTP = () => {
     }
   };
 
-  const handleResend = async () => {
+const handleResend = async () => {
   try {
     const data = await resendOTP(email);
 
@@ -106,8 +106,6 @@ const VerifyOTP = () => {
       "Failed to resend OTP"
     );
   }
-  console.log(email);
-  console.log("Resend clicked");
 };
 
   return (
@@ -118,7 +116,7 @@ const VerifyOTP = () => {
         <div className="flex flex-col items-center mb-8">
 
           <div className="bg-blue-100 p-4 rounded-full mb-4">
-            <FaFileAlt className="text-blue-600 text-3xl" />
+            <FaLock className="text-blue-600 text-3xl" />
           </div>
 
           <h1 className="text-3xl font-bold">
@@ -126,29 +124,23 @@ const VerifyOTP = () => {
           </h1>
 
           <p className="text-gray-500 mt-2">
-            AI Powered Resume Screening
+            Secure Password Recovery
           </p>
 
         </div>
 
-        <div className="flex justify-center mb-4">
-
-          <FaEnvelopeOpenText className="text-6xl text-blue-600" />
-
+        <div className="flex justify-center mb-5">
+          <FaShieldAlt className="text-blue-600 text-6xl" />
         </div>
 
         <h2 className="text-2xl font-bold text-center">
-          Verify Email
+          Verify Reset OTP
         </h2>
 
         <p className="text-center text-gray-500 mt-2 mb-6">
-
-          We've sent a verification code to
-
+          Enter the OTP sent to
           <br />
-
           <strong>{email}</strong>
-
         </p>
 
         <form onSubmit={handleVerify}>
@@ -162,15 +154,11 @@ const VerifyOTP = () => {
               <input
                 key={index}
                 id={`otp-${index}`}
-                value={digit}
-                maxLength={1}
                 type="text"
-                onChange={(e) =>
-                  handleOTPChange(e, index)
-                }
-                onKeyDown={(e) =>
-                  handleKeyDown(e, index)
-                }
+                maxLength={1}
+                value={digit}
+                onChange={(e) => handleOTPChange(e, index)}
+                onKeyDown={(e) => handleKeyDown(e, index)}
                 className="w-12 h-14 border-2 rounded-xl text-center text-2xl font-bold focus:border-blue-500 focus:outline-none"
               />
             ))}
@@ -198,11 +186,11 @@ const VerifyOTP = () => {
             </p>
           ) : (
             <button
-              type="button"
-              onClick={handleResend}
-              className="text-blue-600 font-semibold hover:underline"
-            >
-              Resend OTP
+                type="button"
+                onClick={handleResend}
+                className="text-blue-600 font-semibold hover:underline"
+              >
+                Resend OTP
             </button>
           )}
 
@@ -211,10 +199,10 @@ const VerifyOTP = () => {
         <div className="text-center mt-6">
 
           <Link
-            to="/signup"
+            to="/forgot-password"
             className="text-gray-500 hover:text-blue-600"
           >
-            ← Back to Signup
+            ← Back
           </Link>
 
         </div>
@@ -225,4 +213,4 @@ const VerifyOTP = () => {
   );
 };
 
-export default VerifyOTP;
+export default VerifyResetOTP;

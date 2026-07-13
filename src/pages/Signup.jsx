@@ -64,6 +64,26 @@ const Signup = () => {
     }
   };
 
+const handleResend = async () => {
+  try {
+    const data = await resendOTP(email);
+
+    toast.success(data.message);
+
+    setOtp(["", "", "", "", "", ""]);
+
+    setSeconds(60);
+
+    document.getElementById("otp-0")?.focus();
+
+  } catch (err) {
+    toast.error(
+      err.response?.data?.message ||
+      "Failed to resend OTP"
+    );
+  }
+};
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-100 via-white to-blue-200 flex items-center justify-center px-4">
 
