@@ -16,7 +16,7 @@ import {
 } from "react-icons/fa";
 
 // ---------------------------------------------------------------
-// Small reusable bits
+// Small reusable bits hidden in this file to keep the main component below clean and readable
 // ---------------------------------------------------------------
 
 /** Animates a number counting up from 0 -> value whenever value changes. */
