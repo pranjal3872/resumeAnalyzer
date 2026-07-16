@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef, useCallback } from "react";
+import API from "../api";
 import axios from "axios";
 import {
   FaCheckCircle,
@@ -157,11 +158,7 @@ function Dashboard() {
     isRefresh ? setRefreshing(true) : setLoading(true);
     setError(null);
     try {
-      const token = localStorage.getItem("token");
-      const response = await axios.get(
-        "http://localhost:5000/api/resumes/my",
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      const response = await API.get("/resumes/my");
       const latest = response.data.resumes[0];
       if (!latest) {
         setError("No resume found. Upload one to see your analysis.");

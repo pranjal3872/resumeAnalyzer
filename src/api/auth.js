@@ -1,28 +1,27 @@
-import axios from "axios";
 import API from "./api";
-
-const API_URL = "http://localhost:5000/api/auth"; // backend URL
 
 // Signup
 export const registerUser = async (userData) => {
-  const response = await axios.post(`${API_URL}/register`, userData);
+  const response = await API.post("/auth/register", userData);
   return response.data;
 };
 
 // Login
 export const loginUser = async (userData) => {
-  const response = await axios.post(`${API_URL}/login`, userData);
+  const response = await API.post("/auth/login", userData);
   return response.data;
 };
 
+// Forgot Password
 export const forgotPassword = async (email) => {
-  const response = await API.post(
-    "/auth/forgot-password",
-    { email }
-  );
+  const response = await API.post("/auth/forgot-password", {
+    email,
+  });
 
   return response.data;
 };
+
+// Reset Password
 export const resetPassword = async (email, password) => {
   const response = await API.post("/auth/reset-password", {
     email,
@@ -30,46 +29,45 @@ export const resetPassword = async (email, password) => {
   });
 
   return response.data;
-
-  
 };
 
+// Resend OTP
 export const resendOTP = async (email) => {
-  const res = await API.post("/auth/resend-otp", {
+  const response = await API.post("/auth/resend-otp", {
     email,
   });
 
-  return res.data;
+  return response.data;
 };
+
+// Get Profile
 export const getProfile = async () => {
-  const res = await API.get("/profile");
-  return res.data;
+  const response = await API.get("/profile");
+  return response.data;
 };
+
+// Update Profile
 export const updateProfile = async (data) => {
-  const res = await API.put("/profile", data);
-  return res.data;
+  const response = await API.put("/profile", data);
+  return response.data;
 };
 
+// Upload Photo
 export const uploadPhoto = async (file) => {
+  const formData = new FormData();
+  formData.append("photo", file);
 
-    const formData = new FormData();
+  const response = await API.put("/profile/photo", formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
 
-    formData.append("photo", file);
+  return response.data;
+};
 
-    const res = await API.put(
-        "/profile/photo",
-        formData,
-        {
-            headers:{
-                "Content-Type":"multipart/form-data"
-            }
-        }
-    );
-
-    return res.data;
-}
-
+// Remove Photo
 export const removePhoto = async () => {
-  const res = await API.delete("/profile/photo");
-  return res.data;
+  const response = await API.delete("/profile/photo");
+  return response.data;
 };
