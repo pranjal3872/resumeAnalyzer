@@ -1,33 +1,24 @@
-const nodemailer = require("nodemailer");
+const brevo = require("@getbrevo/brevo");
 
-const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 587,
-  secure: false, // true only for port 465
-  auth: {
-    user: process.env.EMAIL_USER.trim(),
-    pass: process.env.EMAIL_PASS.replace(/\s/g, ""),
-  },
-});
+const apiInstance = new brevo.TransactionalEmailsApi();
+apiInstance.setApiKey(
+  brevo.TransactionalEmailsApiApiKeys.apiKey,
+  process.env.BREVO_API_KEY
+);
 
 const sendEmail = async (to, subject, html) => {
   try {
-    console.log("Verifying SMTP connection...");
-
-    await transporter.verify();
-    console.log("✅ SMTP Connected");
-
-    await transporter.sendMail({
-      from: `"Resume Analyzer" <${process.env.EMAIL_USER}>`,
-      to,
+    const response = await apiInstance.sendTransacEmail({
+      sender: { name: "Resume Analyzer", email: process.env.EMAIL_USER },
+      to: [{ email: to }],
       subject,
-      html,
+      htmlContent: html,
     });
 
-    console.log("✅ Email Sent");
+    console.log("✅ Email Sent:", response.body?.messageId || response);
+    return response;
   } catch (err) {
-    console.error("SMTP Error:");
-    console.error(err);
+    console.error("Brevo Email Error:", err.response?.body || err.message);
     throw err;
   }
 };
