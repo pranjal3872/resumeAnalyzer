@@ -1,6 +1,7 @@
 const axios = require("axios");
 
 const sendEmail = async (to, subject, html) => {
+  console.log("EMAIL_USER:", process.env.EMAIL_USER);
   try {
     const response = await axios.post(
       "https://api.brevo.com/v3/smtp/email",
